@@ -34,7 +34,6 @@ venv.bak/
 runs
 logs
 *.tfrecord
-*.json
 
 .DS_Store
 checkpoint/
