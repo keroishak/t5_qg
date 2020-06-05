@@ -52,8 +52,7 @@ t5.data.TaskRegistry.add(
     splits=["train", "validation"],
     # Supply a function which preprocesses text from the tf.data.Dataset.
     text_preprocessor=None,
-    # Use the same vocabulary that we used for pre-training.
-    sentencepiece_model_path= config['sentencepiece_model_path'],
+    output_features = t5.data.Feature(vocabulary=t5.data.SentencePieceVocabulary(config['sentencepiece_model_path'], 100)),
     # Lowercase targets before computing metrics.
     postprocess_fn=t5.data.postprocessors.lower_text, 
     # We'll use accuracy as our evaluation metric.
@@ -67,7 +66,7 @@ model = t5.models.MtfModel(
     model_dir=config['t5_model_dir'],
     tpu="",
     mesh_devices = ["gpu:0"],
-    mesh_shape = None, #"model:1,batch:1",
+    mesh_shape = "model:1,batch:1",
     model_parallelism=1,
     batch_size=config['batch_size'],
     sequence_length={"inputs": 512, "targets": 66},
