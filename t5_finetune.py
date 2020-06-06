@@ -44,6 +44,7 @@ def qg_dataset_fn(split, shuffle_files=False):
     # ds = ds.map(_parse_function, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     ds = ds.map(_parse_function, num_parallel_calls=tf.data.experimental.AUTOTUNE).map(lambda x:{"inputs":tf.strings.join([x['paragraph'], x['answer']], separator='</s>'), "targets":x['question']})
     return ds
+     
 
 t5.data.TaskRegistry.add(
     "qg_generation",
@@ -66,10 +67,9 @@ model = t5.models.MtfModel(
     model_dir=config['t5_model_dir'],
     tpu="",
     mesh_devices = ["gpu:0"],
-    mesh_shape = "model:1,batch:1",
-    model_parallelism=1,
+    mesh_shape = None, #"model:1,batch:15",
     batch_size=config['batch_size'],
-    sequence_length={"inputs": 512, "targets": 66},
+    sequence_length={"inputs": 350, "targets": 50},
     learning_rate_schedule=config['initial_lr'],
     save_checkpoints_steps=5000,
     keep_checkpoint_max= None,
@@ -79,5 +79,5 @@ model = t5.models.MtfModel(
 model.finetune(
     mixture_or_task_name="qg_generation",
     pretrained_model_dir=config['t5_model_dir'],
-    finetune_steps=config['epochs']
+    finetune_steps=config['epochs'] * 6666
 )
