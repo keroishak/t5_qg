@@ -4,9 +4,8 @@
     "initial_lr": 0.005,
     "t5_model_dir": "../T5/base",
     "sentencepiece_model_path": "../T5/vocab/sentencepiece.model",
-    "train_ds_file": "data/train_dataset.tfrecord",
-    "dev_ds_file": "data/dev_dataset.tfrecord",
-    "test_ds_file": "data/test_dataset.tfrecord",
+    "train_ds_file": "data/boolean_qa_train_dataset.tfrecord",
+    "dev_ds_file": "data/boolean_qa_dev_dataset.tfrecord",
     "restore": false
   }
   
