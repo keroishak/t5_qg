@@ -5,12 +5,6 @@ import json
 import re
 import os
 import argparse
-import nltk
-
-nltk.download("punkt")
-# os.environ["CORENLP_HOME"] = "../../stanford-corenlp/"
-# stanfordnlp.download('en')
-# stanfordnlp.Pipeline()
 
 
 def normalize_text(text):
@@ -99,68 +93,36 @@ def trim_paragraph(paragraph_text, answer_text):
 def convert_to_tf_records(input_file, trim_up_to_answer, replace_answer_span):
     examples_list = []
     with open(input_file) as json_file:
-        data = json.load(json_file)
-        topic_list = data['data']
-        unlabeled_answer_segment = 0
-        for topic in topic_list:
-            topic_title = topic['title']
-            topic_title_text = normalize_text(topic_title)
-            if len(examples_list) >= 100:
-                print(len(examples_list))
-                break
-            for paragraph in topic['paragraphs']:
-                paragraph_text = normalize_text(paragraph['context'])
-                for question in paragraph['qas']:
-                    question_text = normalize_text(question['question'])
-                    answer = question['answers'][0]
-                    answer_text = normalize_text(answer['text'])
-                    trimmed_paragraph_text = paragraph_text
-                    if trim_up_to_answer:
-                        trimmed_paragraph_text = trim_paragraph(
-                            paragraph_text, answer_text)
-                    examples_list.append(
-                        serialize_example(topic_title_text,
-                                          trimmed_paragraph_text, answer_text,
-                                          question_text))
+        for json_example in json_file:
+            record = json.loads(json_example)
+            paragraph = normalize_text(record['passage'])
+            question = normalize_text(record['question'])
+            if record['answer']:
+                answer = 'true'
+            else:
+                answer = 'false'
+            title = normalize_text(record['title'])
+        
+            examples_list.append(serialize_example(title, paragraph, answer, question))
+
     dataset_len = len(examples_list)
     examples_numpy_arr = np.array(examples_list)
     np.random.shuffle(examples_numpy_arr)
-    train_examples = examples_numpy_arr[0:int(0.8 * dataset_len)]
+    train_examples = examples_numpy_arr[0:int(0.9 * dataset_len)]
     print("train_len ", len(train_examples))
-    dev_examples = examples_numpy_arr[int(0.8 * dataset_len):int(0.9 *
-                                                                 dataset_len)]
+    dev_examples = examples_numpy_arr[int(0.9 * dataset_len)::]
     print("dev_len ", len(dev_examples))                                                           
-    test_examples = examples_numpy_arr[int(0.9 * dataset_len)::]
-    print("test_len ", len(test_examples))
     splitted_input_file = input_file.split('/')
 
     train_output_file = '/'.join(
         splitted_input_file[0:len(splitted_input_file) -
-                            1]) + '/slim_train_dataset.tfrecord'
+                            1]) + '/boolean_qa_train_dataset.tfrecord'
     dev_output_file = '/'.join(
         splitted_input_file[0:len(splitted_input_file) -
-                            1]) + '/slim_dev_dataset.tfrecord'
-    test_output_file = '/'.join(
-        splitted_input_file[0:len(splitted_input_file) -
-                            1]) + '/slim_test_dataset.tfrecord'
+                            1]) + '/boolean_qa_dev_dataset.tfrecord'
 
     write_tf_records(train_examples, train_output_file)
     write_tf_records(dev_examples, dev_output_file)
-    write_tf_records(test_examples, test_output_file)
-
-    # special_tokens = ['<PAD>', '<SEP>', '<SOS>', '<EOS>', '<ANS>']
-    # vocab_text = []
-    # for row in training_examples:
-    #     example = tf.train.Example()
-    #     example.ParseFromString(row)
-    #     vocab_text.append(
-    #         example.features.feature['paragraph'].bytes_list.value[0].decode(
-    #             'utf-8'))
-    # tokenizer = tfds.features.text.SubwordTextEncoder.build_from_corpus(
-    #     corpus_generator=(txt for txt in vocab_text),
-    #     reserved_tokens=special_tokens,
-    #     target_vocab_size=2**13)
-    # tokenizer.save_to_file('./wordpieces')
 
 def str2bool(v):
     if isinstance(v, bool):
