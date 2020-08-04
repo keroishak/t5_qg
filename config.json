@@ -1,12 +1,14 @@
 {
     "epochs": 30,
-    "batch_size": 25,
-    "initial_lr": 0.005,
-    "t5_model_dir": "../T5/base",
+    "batch_size": 15,
+    "initial_lr": 6e-5,
+    "decay_steps": 8200,
+    "t5_model_dir": "../T5/small",
     "sentencepiece_model_path": "../T5/vocab/sentencepiece.model",
     "train_ds_file": "data/train_dataset.tfrecord",
     "dev_ds_file": "data/dev_dataset.tfrecord",
     "test_ds_file": "data/test_dataset.tfrecord",
+    "checkpoint_path": "checkpoint/t5_qg.ckpt",
     "restore": false
   }
   
