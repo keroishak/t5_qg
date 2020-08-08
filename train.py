@@ -39,9 +39,9 @@ def train(qg_config_path):
     sentencepiece_mode_path = config['sentencepiece_model_path']
 
     train_input = DatasetPipeline(
-        train_ds, batch_size, sentencepiece_mode_path, slim_dataset=True)
+        train_ds, batch_size, sentencepiece_mode_path)
     val_input = DatasetPipeline(
-        val_ds, batch_size, sentencepiece_mode_path, slim_dataset=True)
+        val_ds, batch_size, sentencepiece_mode_path)
 
     # learning_rate = CustomSchedule(
     #     self.config['hidden_size'], warmup_steps=self.config['warmup_steps'])
