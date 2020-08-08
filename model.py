@@ -8,7 +8,7 @@ class T5QGModel(tf.keras.Model):
         inp = tf.keras.Input(shape=(None, ), dtype=tf.int32, name='input')
         tar = tf.keras.Input(shape=(None, ), dtype=tf.int32, name='target')
 
-        model = TFT5ForConditionalGeneration.from_pretrained(
+        self.t5_model = TFT5ForConditionalGeneration.from_pretrained(
             model_dir, from_pt=False)
         encoder_attention_mask = tf.not_equal(inp, 0)
         decoder_attention_mask = tf.not_equal(tar, 0)
@@ -18,7 +18,7 @@ class T5QGModel(tf.keras.Model):
             decoder_attention_mask, dtype=tf.int32)
         # tf.print(encoder_attention_mask)
         # tf.print(decoder_attention_mask)
-        outputs = model(inp, decoder_input_ids=tar, attention_mask=encoder_attention_mask,
+        outputs = self.t5_model(inp, decoder_input_ids=tar, attention_mask=encoder_attention_mask,
                         decoder_attention_mask=decoder_attention_mask)
         self.model = tf.keras.Model(inputs=[inp, tar],
                                     outputs=outputs[0])
