@@ -105,9 +105,6 @@ def convert_to_tf_records(input_file, trim_up_to_answer, replace_answer_span):
         for topic in topic_list:
             topic_title = topic['title']
             topic_title_text = normalize_text(topic_title)
-            if len(examples_list) >= 100:
-                print(len(examples_list))
-                break
             for paragraph in topic['paragraphs']:
                 paragraph_text = normalize_text(paragraph['context'])
                 for question in paragraph['qas']:
@@ -136,13 +133,13 @@ def convert_to_tf_records(input_file, trim_up_to_answer, replace_answer_span):
 
     train_output_file = '/'.join(
         splitted_input_file[0:len(splitted_input_file) -
-                            1]) + '/slim_train_dataset.tfrecord'
+                            1]) + '/train_dataset.tfrecord'
     dev_output_file = '/'.join(
         splitted_input_file[0:len(splitted_input_file) -
-                            1]) + '/slim_dev_dataset.tfrecord'
+                            1]) + '/dev_dataset.tfrecord'
     test_output_file = '/'.join(
         splitted_input_file[0:len(splitted_input_file) -
-                            1]) + '/slim_test_dataset.tfrecord'
+                            1]) + '/test_dataset.tfrecord'
 
     write_tf_records(train_examples, train_output_file)
     write_tf_records(dev_examples, dev_output_file)
