@@ -1,5 +1,5 @@
 import tensorflow as tf
-from transformers import TFT5ForConditionalGeneration
+from transformers import TFT5ForConditionalGeneration, AutoModelWithLMHead
 
 
 class T5QGModel(tf.keras.Model):
@@ -16,10 +16,10 @@ class T5QGModel(tf.keras.Model):
             encoder_attention_mask, dtype=tf.int32)
         decoder_attention_mask = tf.cast(
             decoder_attention_mask, dtype=tf.int32)
-        # tf.print(encoder_attention_mask)
-        # tf.print(decoder_attention_mask)
+
         outputs = self.t5_model(inp, decoder_input_ids=tar, attention_mask=encoder_attention_mask,
                         decoder_attention_mask=decoder_attention_mask)
+        outputs = tf.nn.softmax(outputs[0])                
         self.model = tf.keras.Model(inputs=[inp, tar],
-                                    outputs=outputs[0])
+                                    outputs=outputs)
                                     
