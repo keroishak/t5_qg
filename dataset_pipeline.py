@@ -36,7 +36,7 @@ class DatasetPipeline():
         paragraph_ids_shape = tf.shape(paragraph_ids)
         answer_ids_shape = tf.shape(answer_ids)
 
-        if paragraph_ids_shape[1] > 512:
+        if paragraph_ids_shape[1] + answer_ids_shape[1] + 2 > 512:
             max_len = 512 - 2 - answer_ids_shape[1]
             paragraph_ids = paragraph_ids[:, :max_len]
 
