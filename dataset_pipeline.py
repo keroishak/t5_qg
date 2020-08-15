@@ -42,7 +42,8 @@ class DatasetPipeline():
 
         input_ids = tf.concat(
             [paragraph_ids, self.seperator_tensor, answer_ids, self.seperator_tensor], 1)
-        target = self.tokenizer.encode(question + '</s>', return_tensors="tf")
+        target = self.tokenizer.encode(question, max_length = 75, return_tensors="tf")
+        target = tf.concat([target, self.seperator_tensor], 1)
 
         return tf.squeeze(input_ids), tf.squeeze(target)
 
