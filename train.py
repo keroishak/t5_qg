@@ -17,7 +17,7 @@ def calculate_loss(real, pred):
     mask = tf.cast(mask, dtype=loss_.dtype)
     loss_ *= mask
 
-    return tf.reduce_mean(loss_)
+    return tf.reduce_sum(loss_)
 
 
 def get_callbacks(config):
@@ -37,11 +37,12 @@ def train(qg_config_path):
     train_ds = config['train_ds_file']
     val_ds = config['dev_ds_file']
     sentencepiece_mode_path = config['sentencepiece_model_path']
+    target_max_len = config['target_max_len']
 
     train_input = DatasetPipeline(
-        train_ds, batch_size, sentencepiece_mode_path)
+        train_ds, batch_size, sentencepiece_mode_path, target_max_len)
     val_input = DatasetPipeline(
-        val_ds, batch_size, sentencepiece_mode_path)
+        val_ds, batch_size, sentencepiece_mode_path, target_max_len)
 
     # learning_rate = CustomSchedule(
     #     self.config['hidden_size'], warmup_steps=self.config['warmup_steps'])

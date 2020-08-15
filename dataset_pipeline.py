@@ -4,9 +4,10 @@ from transformers import T5Tokenizer
 
 
 class DatasetPipeline():
-    def __init__(self, dataset_file, batch_size, sentencepiece_file_path, slim_dataset=False):
+    def __init__(self, dataset_file, batch_size, sentencepiece_file_path, target_max_len, slim_dataset=False):
 
         dataset = tf.data.TFRecordDataset([dataset_file])
+        self.target_max_len = target_max_len
         self.tokenizer = T5Tokenizer.from_pretrained(sentencepiece_file_path)
         self.seperator_tensor = self.tokenizer.encode(
             '</s>', return_tensors="tf")
@@ -42,13 +43,14 @@ class DatasetPipeline():
 
         input_ids = tf.concat(
             [paragraph_ids, self.seperator_tensor, answer_ids, self.seperator_tensor], 1)
-        target = self.tokenizer.encode(question, max_length = 75, return_tensors="tf")
+        target = self.tokenizer.encode(question, return_tensors="tf")
+        target_shape = tf.shape(target)
+
+        if target_shape[1] > self.target_max_len - 1:
+            target = target[:, :self.target_max_len - 1]
         target = tf.concat([target, self.seperator_tensor], 1)
 
         return tf.squeeze(input_ids), tf.squeeze(target)
-
-    def filter_max_length(self, inp, sentence_map, question):
-        return tf.less_equal(tf.size(sentence_map), self.MAX_LENGTH)
 
     def __tf_tokenize(self, record):
         return tf.py_function(self.tokenize, [record],
