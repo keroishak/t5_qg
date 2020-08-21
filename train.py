@@ -41,9 +41,9 @@ def train(qg_config_path):
     target_max_len = config['target_max_len']
 
     train_input = DatasetPipeline(
-        train_ds, batch_size, sentencepiece_mode_path, target_max_len, True, slim_dataset=True)
+        train_ds, batch_size, sentencepiece_mode_path, target_max_len, True)
     val_input = DatasetPipeline(
-        val_ds, batch_size, sentencepiece_mode_path, target_max_len, False, slim_dataset=True)
+        val_ds, batch_size, sentencepiece_mode_path, target_max_len, False)
 
     lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
         config['initial_lr'], decay_steps=config['decay_steps'], decay_rate=0.96, staircase=True)
