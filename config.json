@@ -1,14 +1,14 @@
 {
-  "epochs": 4,
-  "batch_size": 10,
-  "initial_lr": 3e-5,
-  "decay_steps": 4000,
-  "target_max_len": 75,
-  "t5_model_dir": "t5-base",
-  "sentencepiece_model_path": "t5-base",
-  "train_ds_file": "data/train_dataset.tfrecord",
-  "dev_ds_file": "data/dev_dataset.tfrecord",
-  "test_ds_file": "data/test_dataset.tfrecord",
-  "checkpoint_path": "checkpoint/t5_qg.ckpt",
-  "restore": false
-}
+    "epochs": 10,
+    "batch_size": 10,
+    "initial_lr": 6e-4,
+    "decay_steps": 3000,
+    "target_max_len": 75,
+    "t5_model_dir": "t5-base",
+    "sentencepiece_model_path": "t5-base",
+    "train_ds_file": "data/train_dataset.tfrecord",
+    "dev_ds_file": "data/dev_dataset.tfrecord",
+    "test_ds_file": "data/test_dataset.tfrecord",
+    "checkpoint_path": "checkpoint",
+    "restore": false
+  }
