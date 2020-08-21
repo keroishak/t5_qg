@@ -5,25 +5,26 @@ import argparse
 import json
 
 
-def get_loss_function():
-    return tf.keras.losses.SparseCategoricalCrossentropy(reduction='none')
+def calculate_loss(labels, logits):
+    loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(
+        from_logits=True, reduction=tf.keras.losses.Reduction.NONE)
+    # make sure only labels that are not equal to -100
+    # are taken into account as loss
+    active_loss = tf.reshape(labels, (-1,)) != -100
+    reduced_logits = tf.boolean_mask(tf.reshape(
+        logits, (-1, tf.shape(logits)[2])), active_loss)
+    labels = tf.boolean_mask(tf.reshape(labels, (-1,)), active_loss)
+    return loss_fn(labels, reduced_logits)
 
 
-def calculate_loss(real, pred):
-    mask = tf.math.logical_not(tf.math.equal(real, 0))
-    loss_object = get_loss_function()
-    loss_ = loss_object(real, pred)
+def get_callbacks(checkpoint_path):
+    if checkpoint_path[-1] == '/':
+        checkpoint_path = checkpoint_path[:-1]
 
-    mask = tf.cast(mask, dtype=loss_.dtype)
-    loss_ *= mask
-
-    return tf.reduce_sum(loss_)
-
-
-def get_callbacks(config):
+    model_checkpoint = checkpoint_path + '/t5_qg.ckpt'
     return [
         tf.keras.callbacks.ModelCheckpoint(
-            filepath=config['checkpoint_path'], save_best_only=True, monitor='val_sparse_categorical_accuracy', save_weights_only=True, verbose=1, period=2),
+            filepath=model_checkpoint, save_weights_only=True, verbose=1, period=2),
         tf.keras.callbacks.TensorBoard(log_dir='./runs'),
         tf.keras.callbacks.EarlyStopping(patience=5, monitor='val_loss')
     ]
@@ -40,15 +41,13 @@ def train(qg_config_path):
     target_max_len = config['target_max_len']
 
     train_input = DatasetPipeline(
-        train_ds, batch_size, sentencepiece_mode_path, target_max_len)
+        train_ds, batch_size, sentencepiece_mode_path, target_max_len, True, slim_dataset=True)
     val_input = DatasetPipeline(
-        val_ds, batch_size, sentencepiece_mode_path, target_max_len)
+        val_ds, batch_size, sentencepiece_mode_path, target_max_len, False, slim_dataset=True)
 
-    # learning_rate = CustomSchedule(
-    #     self.config['hidden_size'], warmup_steps=self.config['warmup_steps'])
     lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
         config['initial_lr'], decay_steps=config['decay_steps'], decay_rate=0.96, staircase=True)
-    # # self.optimizer = tf.keras.optimizers.SGD(learning_rate)
+
     optimizer = tf.keras.optimizers.Adam(lr_schedule, beta_1=0.9, beta_2=0.98,
                                          epsilon=1e-9)
     train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy()
@@ -66,7 +65,7 @@ def train(qg_config_path):
 
     qg.model.fit(train_input.dataset,
                  epochs=config['epochs'],
-                 callbacks=get_callbacks(config),
+                 callbacks=get_callbacks(config['checkpoint_path']),
                  validation_data=val_input.dataset)
 
 
