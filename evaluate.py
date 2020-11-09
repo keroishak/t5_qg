@@ -4,6 +4,7 @@ from transformers import T5Tokenizer
 import argparse
 import json
 import csv
+from bleu import compute_bleu
 
 
 def evaluate(qg_config_path, data_file):
@@ -27,6 +28,8 @@ def evaluate(qg_config_path, data_file):
     writer.writeheader()
 
     dataset = tf.data.TFRecordDataset([data_file])
+    golden_reference_q = []
+    generated_q = []
     for record in dataset:
         example = tf.train.Example()
         example.ParseFromString(record.numpy())
@@ -52,7 +55,19 @@ def evaluate(qg_config_path, data_file):
         generated_question = tokenizer.decode(result_ids[0])
         writer.writerow({'paragraph': paragraph_text, 'answer/query': answer,
                          'golden question': golden_question, 'generated question': generated_question})
+
+        golden_reference_q.append(golden_question.split(' '))
+        generated_q.append(generated_question.split(' '))
+
     csv_file.close()
+    bleu, precisions, bp, ratio, question_length, reference_length = compute_bleu(
+        golden_reference_q, generated_q, max_order=4)
+    print("BLEU: %f" % (bleu))
+    print("Precisions: ", precisions)
+    print("Brevity Penalty: %f" % (bp))
+    print("Ratio: %f" % (ratio))
+    print("Question length: %f" % (question_length))
+    print("Reference length: %f" % (reference_length))
 
 
 if __name__ == '__main__':
