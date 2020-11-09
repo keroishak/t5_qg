@@ -96,7 +96,7 @@ def trim_paragraph(paragraph_text, answer_text):
     exit(1)
 
 
-def convert_to_tf_records(input_file, trim_up_to_answer, replace_answer_span):
+def convert_to_tf_records(is_train, input_file, trim_up_to_answer, replace_answer_span):
     examples_list = []
     with open(input_file) as json_file:
         data = json.load(json_file)
@@ -121,29 +121,34 @@ def convert_to_tf_records(input_file, trim_up_to_answer, replace_answer_span):
                                           question_text))
     dataset_len = len(examples_list)
     examples_numpy_arr = np.array(examples_list)
-    np.random.shuffle(examples_numpy_arr)
-    train_examples = examples_numpy_arr[0:int(0.8 * dataset_len)]
-    print("train_len ", len(train_examples))
-    dev_examples = examples_numpy_arr[int(0.8 * dataset_len):int(0.9 *
-                                                                 dataset_len)]
-    print("dev_len ", len(dev_examples))                                                           
-    test_examples = examples_numpy_arr[int(0.9 * dataset_len)::]
-    print("test_len ", len(test_examples))
     splitted_input_file = input_file.split('/')
+    if is_train:
+        np.random.shuffle(examples_numpy_arr)
+        train_examples = examples_numpy_arr[0:int(0.9 * dataset_len)]
+        print("train_len ", len(train_examples))
+        dev_examples = examples_numpy_arr[int(0.9 * dataset_len)::]
+        print("dev_len ", len(dev_examples))                                                           
+        # test_examples = examples_numpy_arr[int(0.9 * dataset_len)::]
+        # print("test_len ", len(test_examples))
+        train_output_file = '/'.join(
+            splitted_input_file[0:len(splitted_input_file) -
+                                1]) + '/train_dataset.tfrecord'
+        dev_output_file = '/'.join(
+            splitted_input_file[0:len(splitted_input_file) -
+                                1]) + '/dev_dataset.tfrecord'
+        # test_output_file = '/'.join(
+        #     splitted_input_file[0:len(splitted_input_file) -
+        #                         1]) + '/test_dataset.tfrecord'
 
-    train_output_file = '/'.join(
-        splitted_input_file[0:len(splitted_input_file) -
-                            1]) + '/train_dataset.tfrecord'
-    dev_output_file = '/'.join(
-        splitted_input_file[0:len(splitted_input_file) -
-                            1]) + '/dev_dataset.tfrecord'
-    test_output_file = '/'.join(
-        splitted_input_file[0:len(splitted_input_file) -
-                            1]) + '/test_dataset.tfrecord'
-
-    write_tf_records(train_examples, train_output_file)
-    write_tf_records(dev_examples, dev_output_file)
-    write_tf_records(test_examples, test_output_file)
+        write_tf_records(train_examples, train_output_file)
+        write_tf_records(dev_examples, dev_output_file)
+        # write_tf_records(test_examples, test_output_file)
+    else:
+        test_output_file = '/'.join(
+            splitted_input_file[0:len(splitted_input_file) -
+                                1]) + '/test_dataset.tfrecord'
+        write_tf_records(examples_numpy_arr, test_output_file)
+   
 
     # special_tokens = ['<PAD>', '<SEP>', '<SOS>', '<EOS>', '<ANS>']
     # vocab_text = []
@@ -176,6 +181,11 @@ def main():
                         help='path to data file',
                         required=True)
     parser.add_argument(
+        '--train',
+        type=str2bool,
+        default=False,
+        help='boolean train flag')                    
+    parser.add_argument(
         '--trim_up_to_answer',
         type=str2bool,
         help='boolean flag whether to trim up to answer sentence',
@@ -188,12 +198,13 @@ def main():
         help='boolean flag whether to replace answer span by <ANS> tag',
         required=True)
     args = parser.parse_args()
+    is_train = args.train
     input_file = args.file_path
     trim_up_to_answer = args.trim_up_to_answer
     replace_answer_span = args.replace_answer_span
     assert os.path.exists(input_file) is not None, "%s file is not found" % (
         input_file)
-    convert_to_tf_records(input_file, trim_up_to_answer, replace_answer_span)
+    convert_to_tf_records(is_train, input_file, trim_up_to_answer, replace_answer_span)
 
 
 if __name__ == '__main__':
