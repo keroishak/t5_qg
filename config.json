@@ -1,0 +1,16 @@
+{
+    "epochs": 5,
+    "batch_size": 15,
+    "initial_lr": 1e-4,
+    "decay_steps": 14500,
+    "target_max_len": 60,
+    "drop_gold_tokens": false,
+    "replace_answer": true,
+    "t5_model_dir": "t5-small",
+    "sentencepiece_model_path": "data/tokenizer",
+    "train_ds_file": "data/train_dataset.tfrecord",
+    "dev_ds_file": "data/dev_dataset.tfrecord",
+    "test_ds_file": "data/test_dataset.tfrecord",
+    "checkpoint_path": "experiments/t5_small_1g",
+    "restore": false
+  }
